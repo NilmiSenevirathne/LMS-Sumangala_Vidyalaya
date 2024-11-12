@@ -4,15 +4,17 @@ import CssBaseline from '@mui/material/CssBaseline';
 import backgroundImage from '../Images/backinLogin.jpg';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import { TextField, Button, Typography } from '@mui/material';
-import axios from 'axios'; // Add axios import
+import { TextField, Button, Typography, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material'; // Import visibility icons
+import axios from 'axios';
 
 export default class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: '',
+      userId: '',
       password: '',
+      showPassword: false, // Add state to track password visibility
       error: ''
     };
   }
@@ -20,23 +22,18 @@ export default class Login extends Component {
   handleSubmit = async (event) => {
     event.preventDefault();
 
-    const { email, password } = this.state;
+    const { userId, password } = this.state;
 
     try {
-      // Use environment variable for API URL
       const apiUrl = process.env.REACT_APP_API_URL;
       const response = await axios.post(`${apiUrl}/login`, {
-        userId: email,
+        userId: userId,
         password: password,
       });
 
-      // Handle successful login response (e.g., store token, user info)
       console.log('Login successful:', response.data);
-
-      // You can redirect the user to a dashboard or another page here
-      // this.props.history.push('/dashboard');
     } catch (error) {
-      this.setState({ error: 'Invalid email or password' });
+      this.setState({ error: 'Invalid userId or password' });
       console.error('Login failed:', error);
     }
   }
@@ -45,9 +42,13 @@ export default class Login extends Component {
     this.setState({ [event.target.name]: event.target.value });
   }
 
+  handleClickShowPassword = () => {
+    this.setState((prevState) => ({ showPassword: !prevState.showPassword }));
+  };
+
   render() {
     const defaultTheme = createTheme();
-    const { email, password, error } = this.state;
+    const { userId, password, showPassword, error } = this.state;
 
     return (
       <ThemeProvider theme={defaultTheme}>
@@ -57,11 +58,10 @@ export default class Login extends Component {
             item
             xs={false}
             sm={8}
-            md={6} // Adjust this breakpoint if needed
+            md={6}
             sx={{
               backgroundImage: `url(${backgroundImage})`,
-              backgroundColor: (t) =>
-                t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
+              backgroundColor: (t) => t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               height: '100%',
@@ -71,7 +71,7 @@ export default class Login extends Component {
             item
             xs={12}
             sm={4}
-            md={6} // Adjust this breakpoint if needed
+            md={6}
             container
             direction="column"
             alignItems="center"
@@ -106,11 +106,11 @@ export default class Login extends Component {
                     margin="normal"
                     required
                     fullWidth
-                    label="Email Address"
-                    name="email"
-                    autoComplete="email"
+                    label="User ID"
+                    name="userId"
+                    autoComplete="userid"
                     autoFocus
-                    value={email}
+                    value={userId}
                     onChange={this.handleChange}
                   />
                   <TextField
@@ -120,10 +120,23 @@ export default class Login extends Component {
                     fullWidth
                     name="password"
                     label="Password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'} // Toggle the input type based on showPassword state
                     autoComplete="current-password"
                     value={password}
                     onChange={this.handleChange}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={this.handleClickShowPassword}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />} {/* Toggle the eye icon */}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                   {error && (
                     <Typography color="error" variant="body2" align="center">
