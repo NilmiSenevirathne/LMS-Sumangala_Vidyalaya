@@ -5,10 +5,49 @@ import backgroundImage from '../Images/backinLogin.jpg';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import { TextField, Button, Typography } from '@mui/material';
+import axios from 'axios'; // Add axios import
 
 export default class Login extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      email: '',
+      password: '',
+      error: ''
+    };
+  }
+
+  handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const { email, password } = this.state;
+
+    try {
+      // Use environment variable for API URL
+      const apiUrl = process.env.REACT_APP_API_URL;
+      const response = await axios.post(`${apiUrl}/login`, {
+        userId: email,
+        password: password,
+      });
+
+      // Handle successful login response (e.g., store token, user info)
+      console.log('Login successful:', response.data);
+
+      // You can redirect the user to a dashboard or another page here
+      // this.props.history.push('/dashboard');
+    } catch (error) {
+      this.setState({ error: 'Invalid email or password' });
+      console.error('Login failed:', error);
+    }
+  }
+
+  handleChange = (event) => {
+    this.setState({ [event.target.name]: event.target.value });
+  }
+
   render() {
     const defaultTheme = createTheme();
+    const { email, password, error } = this.state;
 
     return (
       <ThemeProvider theme={defaultTheme}>
@@ -59,9 +98,9 @@ export default class Login extends Component {
                 }}
               >
                 <Typography variant="h5" align="center" gutterBottom>
-                   Login 
+                  Login
                 </Typography>
-                <form>
+                <form onSubmit={this.handleSubmit}>
                   <TextField
                     variant="outlined"
                     margin="normal"
@@ -71,6 +110,8 @@ export default class Login extends Component {
                     name="email"
                     autoComplete="email"
                     autoFocus
+                    value={email}
+                    onChange={this.handleChange}
                   />
                   <TextField
                     variant="outlined"
@@ -81,7 +122,14 @@ export default class Login extends Component {
                     label="Password"
                     type="password"
                     autoComplete="current-password"
+                    value={password}
+                    onChange={this.handleChange}
                   />
+                  {error && (
+                    <Typography color="error" variant="body2" align="center">
+                      {error}
+                    </Typography>
+                  )}
                   <Button
                     type="submit"
                     fullWidth
